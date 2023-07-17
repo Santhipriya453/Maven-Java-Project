@@ -1,2 +1,2 @@
-[webservers]
-172.31.12.189 ansible_user=ec2-user 
+[production]
+tomcatserver ansible_ssh_host=13.229.147.6 ansible_user=ec2-user 
