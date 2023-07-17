@@ -1,6 +1,6 @@
 ---
 - name: Deploy Java WAR file to Tomcat
-  hosts: your_tomcat_host
+  hosts: tomcatserver
   become: true
 
   vars:
