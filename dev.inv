@@ -1,2 +1,2 @@
-[production]
-tomcatserver ansible_ssh_host=172.31.10.3 ansible_user=ec2-user 
+[tomcatserver]
+172.31.10.3 ansible_user=ec2-user 
