@@ -1,48 +1,56 @@
 ---
-- name: Deploy Java WAR file to Tomcat
-  hosts: tomcatserver
-  become: true
-
+- hosts: tomcatserver
   vars:
-    tomcat_manager_user: admin
-    tomcat_manager_password: admin
-    ##war_file_url: http://54.254.201.4:8081/repository/javaapp/com/example/java-maven/1.0-SNAPSHOT/java-maven-1.0-20230717.104959-2.war
     nexus_repo_url: "http://54.255.174.151:8081/"
-    #nexus_username: "your-nexus-username"
-    #nexus_password: "your-nexus-password"
+    nexus_username: "admin"
+    nexus_password: "password"
     group_id: "com.example"
-    artifact_id: "java-maven"
+    artifact_id: "java-mave"
     repository: "javaapp"
-    ##tomcat_webapps_path: "/path/to/tomcat/webapps"
+    tomcat_webapps_path: "/opt/tomcat/webapps"
     war_filename: "{{ artifact_id }}.war"
   tasks:
-    - name: Download WAR file from Nexus
-      get_url: 
-        url: "{{ nexus_repo_url }}"
-        username: admin
-        password: password
-        group_id: "{{ group_id }}"
-        artifact_id: "{{ artifact_id }}"
-        version: "1.0-SNAPSHOT"
-        repository: "{{ repository }}"
-        classifier: "war"
+    - name: Get the latest version from Nexus metadata
+      uri:
+        url: "{{ nexus_repo_url }}/service/local/repositories/{{ repository }}/content/{{ group_id | replace('.', '/') }}/{{ artifact_id }}/maven-metadata.xml"
+        return_content: yes
+        method: GET
+        user: "{{ nexus_username }}"
+        password: "{{ nexus_password }}"
+      register: metadata_result
+
+    - name: Extract the latest version from Nexus metadata
+      set_fact:
+        latest_version: "{{ metadata_result.content | from_xml | xml_findall('/metadata/versioning/latest') | first }}"
+
+    - name: Generate download URL for the latest WAR
+      set_fact:
+        war_download_url: "{{ nexus_repo_url }}/service/local/repositories/{{ repository }}/content/{{ group_id | replace('.', '/') }}/{{ artifact_id }}/{{ latest_version }}/{{ artifact_id }}-{{ latest_version }}.war"
+
+    - name: Download the latest WAR artifact from Nexus
+      get_url:
+        url: "{{ war_download_url }}"
         dest: "/tmp/{{ war_filename }}"
+        force: yes
+        headers:
+          Authorization: "Basic {{ (nexus_username + ':' + nexus_password) | b64encode }}"
+      register: war_download_result
 
-    - name: Remove existing WAR file from Tomcat
-      file:
-        path: /opt/tomcat/webapps/*.war
-        state: absent
-      notify: Restart Tomcat
+    - name: Check if WAR file was downloaded
+      fail:
+        msg: "Failed to download the latest WAR file from Nexus"
+      when: not war_download_result.changed
 
-    - name: Deploy WAR file to Tomcat
+    - name: Deploy the WAR file to Tomcat webapps directory
       copy:
         remote_src: yes
-        src: "/tmp/{{ artifact_id }}.war"
-        dest: "/path/to/tomcat/webapps/{{ artifact_id }}.war"
-      notify: Restart Tomcat
+        src: "/tmp/{{ war_filename }}"
+        dest: "{{ tomcat_webapps_path }}/{{ war_filename }}"
+      notify:
+        - Restart Tomcat
 
   handlers:
     - name: Restart Tomcat
-      systemd:
+      service:
         name: tomcat
         state: restarted
