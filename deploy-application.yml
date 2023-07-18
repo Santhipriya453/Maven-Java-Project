@@ -7,19 +7,26 @@
     tomcat_manager_user: admin
     tomcat_manager_password: admin
     ##war_file_url: http://54.254.201.4:8081/repository/javaapp/com/example/java-maven/1.0-SNAPSHOT/java-maven-1.0-20230717.104959-2.war
-
+    nexus_repo_url: "http://54.255.174.151:8081/"
+    #nexus_username: "your-nexus-username"
+    #nexus_password: "your-nexus-password"
+    group_id: "com.example"
+    artifact_id: "java-maven"
+    repository: "javaapp"
+    ##tomcat_webapps_path: "/path/to/tomcat/webapps"
+    war_filename: "{{ artifact_id }}.war"
   tasks:
     - name: Download WAR file from Nexus
-      get_url:
-        url: http://54.255.174.151:8081/
+      get_url: 
+        url: "{{ nexus_repo_url }}"
         username: admin
         password: password
-        group_id: "com.example"
-        artifact_id: "java-maven"
+        group_id: "{{ group_id }}"
+        artifact_id: "{{ artifact_id }}"
         version: "1.0-SNAPSHOT"
-        repository: "javaapp"
+        repository: "{{ repository }}"
         classifier: "war"
-        dest: "/tmp/{{ artifact_id }}.war"
+        dest: "/tmp/{{ war_filename }}"
 
     - name: Remove existing WAR file from Tomcat
       file:
