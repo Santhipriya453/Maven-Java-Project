@@ -13,7 +13,7 @@
   tasks:
     - name: Get the latest version from Nexus metadata
       uri:
-        url: "{{ nexus_repo_url }}/repositories/{{ repository }}/{{ group_id | replace('.', '/') }}/{{ artifact_id }}/{{ version }}/maven-metadata.xml"
+        url: "{{ nexus_repo_url }}/repository/{{ repository }}/{{ group_id | replace('.', '/') }}/{{ artifact_id }}/{{ version }}/maven-metadata.xml"
         return_content: yes
         method: GET
         user: "{{ nexus_username }}"
@@ -26,7 +26,7 @@
 
     - name: Generate download URL for the latest WAR
       set_fact:
-        war_download_url: "{{ nexus_repo_url }}/repositories/{{ repository }}/{{ group_id | replace('.', '/') }}/{{ artifact_id }}/{{ version }}/{{ artifact_id }}-{{ latest_version }}.war"
+        war_download_url: "{{ nexus_repo_url }}/repository/{{ repository }}/{{ group_id | replace('.', '/') }}/{{ artifact_id }}/{{ version }}/{{ artifact_id }}-{{ latest_version }}.war"
 
     - name: Download the latest WAR artifact from Nexus
       get_url:
