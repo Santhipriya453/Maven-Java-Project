@@ -6,27 +6,32 @@
   vars:
     tomcat_manager_user: admin
     tomcat_manager_password: admin
-    war_file_url: http://54.254.201.4:8081/repository/javaapp/com/example/java-maven/1.0-SNAPSHOT/java-maven-1.0-20230717.104959-2.war
+    ##war_file_url: http://54.254.201.4:8081/repository/javaapp/com/example/java-maven/1.0-SNAPSHOT/java-maven-1.0-20230717.104959-2.war
 
   tasks:
     - name: Download WAR file from Nexus
       get_url:
-        url: "{{ war_file_url }}"
+        url: http://54.255.174.151:8081/
         username: admin
         password: password
-        dest: /tmp/java-maven-1.0-20230717.104959-2.war
+        group_id: "com.example"
+        artifact_id: "java-maven"
+        version: "1.0-SNAPSHOT"
+        repository: "javaapp"
+        classifier: "war"
+        dest: "/tmp/{{ artifact_id }}.war"
 
     - name: Remove existing WAR file from Tomcat
       file:
-        path: /opt/tomcat/webapps/java-maven-1.0-20230717.104959-2.war
+        path: /opt/tomcat/webapps/*.war
         state: absent
       notify: Restart Tomcat
 
     - name: Deploy WAR file to Tomcat
       copy:
         remote_src: yes
-        src: /tmp/java-maven-1.0-20230717.104959-2.war
-        dest: /opt/tomcat/webapps/java-maven-1.0-20230717.104959-2.war
+        src: "/tmp/{{ artifact_id }}.war"
+        dest: "/path/to/tomcat/webapps/{{ artifact_id }}.war"
       notify: Restart Tomcat
 
   handlers:
