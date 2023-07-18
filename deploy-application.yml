@@ -1,6 +1,7 @@
 ---
 - hosts: tomcatserver
   vars:
+    ansible_python_interpreter: /usr/bin/python3
     nexus_repo_url: "http://52.77.234.48:8081"
     nexus_username: "admin"
     nexus_password: "password"
