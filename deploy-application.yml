@@ -1,18 +1,18 @@
 ---
 - hosts: tomcatserver
   vars:
-    nexus_repo_url: "http://54.255.174.151:8081/"
+    nexus_repo_url: "http://54.255.174.151:8081"
     nexus_username: "admin"
     nexus_password: "password"
     group_id: "com.example"
-    artifact_id: "java-mave"
+    artifact_id: "java-maven"
     repository: "javaapp"
     tomcat_webapps_path: "/opt/tomcat/webapps"
     war_filename: "{{ artifact_id }}.war"
   tasks:
     - name: Get the latest version from Nexus metadata
       uri:
-        url: "{{ nexus_repo_url }}/service/local/repositories/{{ repository }}/content/{{ group_id | replace('.', '/') }}/{{ artifact_id }}/maven-metadata.xml"
+        url: "{{ nexus_repo_url }}/repositories/{{ repository }}/{{ group_id | replace('.', '/') }}/{{ artifact_id }}/maven-metadata.xml"
         return_content: yes
         method: GET
         user: "{{ nexus_username }}"
@@ -25,7 +25,7 @@
 
     - name: Generate download URL for the latest WAR
       set_fact:
-        war_download_url: "{{ nexus_repo_url }}/service/local/repositories/{{ repository }}/content/{{ group_id | replace('.', '/') }}/{{ artifact_id }}/{{ latest_version }}/{{ artifact_id }}-{{ latest_version }}.war"
+        war_download_url: "{{ nexus_repo_url }}/repositories/{{ repository }}/{{ group_id | replace('.', '/') }}/{{ artifact_id }}/{{ latest_version }}/{{ artifact_id }}-{{ latest_version }}.war"
 
     - name: Download the latest WAR artifact from Nexus
       get_url:
