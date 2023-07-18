@@ -22,7 +22,7 @@
 
     - name: Extract the latest version from Nexus metadata
       set_fact:
-        latest_version: "{{ metadata_result.content | from_xml | xml_findall('/metadata/versioning/latest') | first }}"
+        latest_version: "{{ metadata_result.content | from_xml | xml_findall('/metadata/versioning/snapshotVersion/value') | first }}"
 
     - name: Generate download URL for the latest WAR
       set_fact:
