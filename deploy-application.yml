@@ -24,6 +24,7 @@
 
     - name: Deploy WAR file to Tomcat
       copy:
+        remote_src: yes
         src: /tmp/java-maven-1.0-20230717.104959-2.war
         dest: /opt/tomcat/webapps/java-maven-1.0-20230717.104959-2.war
       notify: Restart Tomcat
