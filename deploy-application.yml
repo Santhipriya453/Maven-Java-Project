@@ -21,8 +21,15 @@
       register: metadata_result
 
     - name: Extract the latest version from Nexus metadata
+      #set_fact:
+        #latest_version: "{{ metadata_result.content | from_xml | xml_findall('/metadata/versioning/snapshotVersion/value') | first }}"
+      community.general.xml:
+        xmlstring: "{{ metadata_result.content }}"
+        xpath: "/metadata/versioning/snapshotVersions/snapshotVersion/value"
+      register: version_result
+    - name: Set the latest version as a fact
       set_fact:
-        latest_version: "{{ metadata_result.content | from_xml | xml_findall('/metadata/versioning/snapshotVersion/value') | first }}"
+        latest_version: "{{ version_result['matches'][0]['_value'] }}"
 
     - name: Generate download URL for the latest WAR
       set_fact:
