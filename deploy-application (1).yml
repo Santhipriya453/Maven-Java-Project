@@ -1,0 +1,36 @@
+---
+- name: Deploy Java WAR file to Tomcat
+  hosts: tomcatserver
+  become: true
+
+  vars:
+    tomcat_manager_user: admin
+    tomcat_manager_password: admin
+    war_file_url: http://54.254.201.4:8081/repository/javaapp/com/example/java-maven/1.0-SNAPSHOT/java-maven-1.0-20230717.104959-2.war
+
+  tasks:
+    - name: Download WAR file from Nexus
+      get_url:
+        url: "{{ war_file_url }}"
+        username: admin
+        password: password
+        dest: /tmp/java-maven-1.0-20230717.104959-2.war
+
+    - name: Remove existing WAR file from Tomcat
+      file:
+        path: /opt/tomcat/webapps/java-maven-1.0-20230717.104959-2.war
+        state: absent
+      notify: Restart Tomcat
+
+    - name: Deploy WAR file to Tomcat
+      copy:
+        remote_src: yes
+        src: /tmp/java-maven-1.0-20230717.104959-2.war
+        dest: /opt/tomcat/webapps/java-maven-1.0-20230717.104959-2.war
+      notify: Restart Tomcat
+
+  handlers:
+    - name: Restart Tomcat
+      systemd:
+        name: tomcat
+        state: restarted
